@@ -50,35 +50,24 @@ class ShowException():
 
 
 # TODO add exhaustiveness checking for subclasses
+# can't use ABCs with @dataclass because of https://github.com/python/mypy/issues/5374
 # top-level superclass for all events
 class Event(metaclass=ABCMeta):
     # fields that should be on all events with their default implementations
-    ts: datetime = datetime.now()
-    pid: int = os.getpid()
-    # code: int
+    log_version: int = 1
+    ts: datetime = datetime.now()  # TODO this is wrong
+    pid: int = os.getpid()  # TODO this is wrong
 
     # do not define this yourself. inherit it from one of the above level types.
     @abstractmethod
     def level_tag(self) -> str:
-        raise Exception("level_tag not implemented for event")
+        raise Exception("level_tag not implemented for Event")
 
     # Solely the human readable message. Timestamps and formatting will be added by the logger.
     # Must override yourself
     @abstractmethod
     def message(self) -> str:
-        raise Exception("msg not implemented for cli event")
-
-    # returns a dictionary representation of the event fields. You must specify which of the
-    # available messages you would like to use (i.e. - e.message, e.cli_msg(), e.file_msg())
-    # used for constructing json formatted events. includes secrets which must be scrubbed at
-    # the usage site.
-    def to_dict(self, msg: str) -> dict:
-        level = self.level_tag()
-        return {
-            'pid': self.pid,
-            'msg': msg,
-            'level': level if len(level) == 5 else f"{level} "
-        }
+        raise Exception("msg not implemented for Event")
 
 
 class File(Event, metaclass=ABCMeta):
