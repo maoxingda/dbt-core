@@ -115,8 +115,8 @@ def event_to_dict(e: T_Event, msg_fn: Callable[[T_Event], str]) -> dict:
     level = e.level_tag()
     return {
         'log_version': e.log_version,
-        'ts': e.ts,
-        'pid': e.pid,
+        'ts': e.get_ts(),
+        'pid': e.get_pid(),
         'msg': msg_fn(e),
         'level': level if len(level) == 5 else f"{level} "
     }
@@ -127,7 +127,7 @@ def event_to_dict(e: T_Event, msg_fn: Callable[[T_Event], str]) -> dict:
 # type hinting everything as strings so we don't get any unintentional string conversions via str()
 def create_text_log_line(e: T_Event, msg_fn: Callable[[T_Event], str]) -> str:
     color_tag: str = '' if this.format_color else Style.RESET_ALL
-    ts: str = e.ts.strftime("%H:%M:%S")
+    ts: str = e.get_ts().strftime("%H:%M:%S")
     scrubbed_msg: str = scrub_secrets(msg_fn(e), env_secrets())
     level: str = e.level_tag()
     log_line: str = f"{color_tag}{ts} | [ {level} ] | {scrubbed_msg}"
@@ -138,7 +138,7 @@ def create_text_log_line(e: T_Event, msg_fn: Callable[[T_Event], str]) -> str:
 # you have to specify which message you want. (i.e. - e.message, e.cli_msg(), e.file_msg())
 def create_json_log_line(e: T_Event, msg_fn: Callable[[T_Event], str]) -> str:
     values = event_to_dict(e, lambda x: scrub_secrets(msg_fn(x), env_secrets()))
-    values['ts'] = e.ts.isoformat()
+    values['ts'] = e.get_ts().isoformat()
     log_line = json.dumps(values, sort_keys=True)
     return log_line
 

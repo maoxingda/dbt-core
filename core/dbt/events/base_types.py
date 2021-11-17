@@ -2,7 +2,7 @@ from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
 import os
-from typing import Any
+from typing import Any, Optional
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -55,8 +55,8 @@ class ShowException():
 class Event(metaclass=ABCMeta):
     # fields that should be on all events with their default implementations
     log_version: int = 1
-    ts: datetime = datetime.now()  # TODO this is wrong
-    pid: int = os.getpid()  # TODO this is wrong
+    ts: Optional[datetime] = None  # use getter for non-optional
+    pid: Optional[int] = None  # use getter for non-optional
 
     # do not define this yourself. inherit it from one of the above level types.
     @abstractmethod
@@ -68,6 +68,18 @@ class Event(metaclass=ABCMeta):
     @abstractmethod
     def message(self) -> str:
         raise Exception("msg not implemented for Event")
+
+    # exactly one time stamp per concrete event
+    def get_ts(self) -> datetime:
+        if not self.ts:
+            self.ts = datetime.now()
+        return self.ts
+
+    # exactly one pid per concrete event
+    def get_pid(self) -> int:
+        if not self.pid:
+            self.pid = os.getpid()
+        return self.pid
 
 
 class File(Event, metaclass=ABCMeta):
