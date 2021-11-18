@@ -2,7 +2,7 @@ from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
 import os
-from typing import Any
+from typing import Any, Dict
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -76,7 +76,8 @@ class Event(metaclass=ABCMeta):
         return {
             'pid': self.pid,
             'msg': msg,
-            'level': self.level_tag()
+            'level': self.level_tag(),
+            'data': {k: str(v) for (k, v) in self.__dict__.items()}
         }
 
 
