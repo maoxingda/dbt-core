@@ -77,7 +77,8 @@ class Event(metaclass=ABCMeta):
             'pid': self.pid,
             'msg': msg,
             'level': self.level_tag(),
-            'data': {k: str(v) for (k, v) in self.__dict__.items()}
+            'data': Dict[str, Any]
+
         }
 
 

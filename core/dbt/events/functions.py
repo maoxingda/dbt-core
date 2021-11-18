@@ -129,6 +129,7 @@ def create_text_log_line(e: T_Event, msg_fn: Callable[[T_Event], str]) -> str:
 def create_json_log_line(e: T_Event, msg_fn: Callable[[T_Event], str]) -> str:
     values = e.to_dict(scrub_secrets(msg_fn(e), env_secrets()))
     values['ts'] = e.ts.isoformat()
+    values['data'] = {k: scrub_secrets(str(v), env_secrets()) for (k, v) in e.__dict__.items()}
     log_line = json.dumps(values, sort_keys=True)
     return log_line
 
