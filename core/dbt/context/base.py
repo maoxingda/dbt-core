@@ -313,6 +313,8 @@ class BaseContext(metaclass=ContextMeta):
         If the default is None, raise an exception for an undefined variable.
         """
         return_value = None
+        if var.startswith(SECRET_ENV_PREFIX):
+            raise_parsing_error("You can't do that here!")
         if var in os.environ:
             return_value = os.environ[var]
         elif default is not None:

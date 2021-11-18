@@ -89,6 +89,8 @@ class SchemaYamlContext(ConfiguredContext):
     @contextmember
     def env_var(self, var: str, default: Optional[str] = None) -> str:
         return_value = None
+        if var.startswith(SECRET_ENV_PREFIX):
+            raise_parsing_error(f"You can't do that here!")
         if var in os.environ:
             return_value = os.environ[var]
         elif default is not None:

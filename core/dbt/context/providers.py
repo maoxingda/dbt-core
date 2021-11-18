@@ -1172,7 +1172,10 @@ class ProviderContext(ManifestContext):
 
         If the default is None, raise an exception for an undefined variable.
         """
+        import ipdb; ipdb.set_trace()
         return_value = None
+        if var.startswith(SECRET_ENV_PREFIX):
+            raise_parsing_error("You can't do that here!")
         if var in os.environ:
             return_value = os.environ[var]
         elif default is not None:
@@ -1481,6 +1484,8 @@ class TestContext(ProviderContext):
     @contextmember
     def env_var(self, var: str, default: Optional[str] = None) -> str:
         return_value = None
+        if var.startswith(SECRET_ENV_PREFIX):
+            raise_parsing_error("You can't do that here!")
         if var in os.environ:
             return_value = os.environ[var]
         elif default is not None:
