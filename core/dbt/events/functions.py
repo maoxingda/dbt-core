@@ -14,6 +14,7 @@ from logging import Logger
 from logging.handlers import RotatingFileHandler
 import os
 from typing import Callable, List, TypeVar, Union
+from dataclasses import _FIELD_BASE  # type: ignore[attr-defined]
 
 
 # create the global file logger with no configuration
@@ -124,13 +125,33 @@ def create_text_log_line(e: T_Event, msg_fn: Callable[[T_Event], str]) -> str:
     return log_line
 
 
+# classes and sets are returned that cannot be natively encoded to json
+def set_default(obj):
+    if hasattr(obj, '__dict__'):
+        return obj.__dict__
+    if isinstance(obj, set):
+        return list(obj)
+    return str(obj)
+
+
 # translates an Event to a completely formatted json log line
 # you have to specify which message you want. (i.e. - e.message, e.cli_msg(), e.file_msg())
 def create_json_log_line(e: T_Event, msg_fn: Callable[[T_Event], str]) -> str:
-    values = e.to_dict(scrub_secrets(msg_fn(e), env_secrets()))
+    values = e.to_dict(msg_fn(e))
     values['ts'] = e.ts.isoformat()
-    values['data'] = {k: scrub_secrets(str(v), env_secrets()) for (k, v) in vars(e).items()}
-    log_line = json.dumps(values, sort_keys=True)
+    if hasattr(e, '__dataclass_fields__'):
+        values['data'] = {
+            x: getattr(e, x) for x, y
+            in e.__dataclass_fields__.items()  # type: ignore[attr-defined]
+            if type(y._field_type) == _FIELD_BASE
+        }
+    else:
+        values['data'] = None
+    log_line = json.dumps(
+        {k: scrub_secrets(v, env_secrets()) for (k, v) in values.items()},
+        default=lambda x: set_default(x),
+        sort_keys=True
+    )
     return log_line
 
 

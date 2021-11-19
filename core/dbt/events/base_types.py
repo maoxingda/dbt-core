@@ -2,7 +2,7 @@ from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
 import os
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -77,7 +77,7 @@ class Event(metaclass=ABCMeta):
             'pid': self.pid,
             'msg': msg,
             'level': self.level_tag(),
-            'data': Dict[str, Any]
+            'data': Optional[Dict[str, Any]]
 
         }
 
